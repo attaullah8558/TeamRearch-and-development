@@ -22,9 +22,35 @@ left <- data[data$Attrition == "Yes", ]
 cat("Employees who stayed - Mean income:", mean(stayed$MonthlyIncome), "\n")
 cat("Employees who left - Mean income:", mean(left$MonthlyIncome), "\n")
 
-# TODO: Add statistical tests
-# TODO: Check assumptions
-# TODO: Create visualizations
+# Check normality assumptions for t-test
+cat("\n=== NORMALITY TESTING ===\n")
+cat("Testing if data follows normal distribution...\n\n")
+
+# Shapiro-Wilk test for stayed group
+stayed_income <- stayed$MonthlyIncome
+if(length(stayed_income) > 5000) {
+  # Sample if too large for Shapiro test
+  shapiro_stayed <- shapiro.test(sample(stayed_income, 5000))
+} else {
+  shapiro_stayed <- shapiro.test(stayed_income)
+}
+cat("Stayed group - Shapiro-Wilk p-value:", shapiro_stayed$p.value, "\n")
+
+# Shapiro-Wilk test for left group
+left_income <- left$MonthlyIncome
+shapiro_left <- shapiro.test(left_income)
+cat("Left group - Shapiro-Wilk p-value:", shapiro_left$p.value, "\n")
+
+if(shapiro_stayed$p.value < 0.05 || shapiro_left$p.value < 0.05) {
+  cat("\nResult: Data is NOT normally distributed (p < 0.05)\n")
+  cat("Recommendation: Use non-parametric test (Mann-Whitney U)\n")
+} else {
+  cat("\nResult: Data follows normal distribution\n")
+  cat("Can proceed with parametric t-test\n")
+}
+
+# TODO: Add Mann-Whitney U test or t-test based on assumptions
+# TODO: Create visualizations (histograms, boxplots)
 
 ###############################################################################
 # Mann-Whitney U Test (Wilcoxon rank-sum)
