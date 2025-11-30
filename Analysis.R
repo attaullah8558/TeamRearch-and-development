@@ -49,7 +49,31 @@ if(shapiro_stayed$p.value < 0.05 || shapiro_left$p.value < 0.05) {
   cat("Can proceed with parametric t-test\n")
 }
 
-# TODO: Add Mann-Whitney U test or t-test based on assumptions
+# Perform Mann-Whitney U Test (Wilcoxon rank-sum test)
+cat("\n=== MANN-WHITNEY U TEST ===\n")
+cat("Testing if income differs between groups...\n\n")
+
+mw_test <- wilcox.test(stayed_income, left_income, alternative = "two.sided")
+
+cat("Test Statistic (W):", mw_test$statistic, "\n")
+cat("P-value:", format(mw_test$p.value, scientific = TRUE), "\n")
+cat("\nDecision at α = 0.05:\n")
+if(mw_test$p.value < 0.05) {
+  cat("REJECT the null hypothesis\n")
+  cat("Conclusion: Significant difference in income between groups\n")
+} else {
+  cat("FAIL TO REJECT the null hypothesis\n")
+  cat("Conclusion: No significant difference in income\n")
+}
+
+# Calculate effect size and practical significance
+mean_diff <- mean(stayed_income) - mean(left_income)
+median_diff <- median(stayed_income) - median(left_income)
+
+cat("\n=== EFFECT SIZE ===\n")
+cat("Mean difference: $", round(mean_diff, 2), "\n")
+cat("Median difference: $", round(median_diff, 2), "\n")
+
 # TODO: Create visualizations (histograms, boxplots)
 
 ###############################################################################
