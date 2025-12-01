@@ -74,7 +74,32 @@ cat("\n=== EFFECT SIZE ===\n")
 cat("Mean difference: $", round(mean_diff, 2), "\n")
 cat("Median difference: $", round(median_diff, 2), "\n")
 
-# TODO: Create visualizations (histograms, boxplots)
+# Create visualizations
+cat("\n=== CREATING VISUALIZATIONS ===\n")
+
+# Histogram of income distribution
+png("income_histogram.png", width = 800, height = 600)
+hist(stayed_income, col = rgb(0, 0, 1, 0.5), 
+     main = "Income Distribution by Attrition Status",
+     xlab = "Monthly Income ($)", 
+     xlim = range(c(stayed_income, left_income)),
+     breaks = 30)
+hist(left_income, col = rgb(1, 0, 0, 0.5), add = TRUE, breaks = 30)
+legend("topright", c("Stayed", "Left"), 
+       fill = c(rgb(0, 0, 1, 0.5), rgb(1, 0, 0, 0.5)))
+dev.off()
+cat("Created: income_histogram.png\n")
+
+# Boxplot comparison
+png("income_boxplot.png", width = 800, height = 600)
+boxplot(MonthlyIncome ~ Attrition, data = data,
+        main = "Monthly Income by Attrition Status",
+        xlab = "Attrition", ylab = "Monthly Income ($)",
+        col = c("lightblue", "lightcoral"))
+dev.off()
+cat("Created: income_boxplot.png\n")
+
+cat("\n=== ANALYSIS COMPLETE ===\n")
 
 ###############################################################################
 # Mann-Whitney U Test (Wilcoxon rank-sum)
