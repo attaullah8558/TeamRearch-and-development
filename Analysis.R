@@ -1,11 +1,21 @@
-# HR Attrition Analysis - Initial Analysis Script
-# Date: November 28, 2025
-# Author: Muhammad Asim
+###############################################################################
+# HR Employee Attrition Analysis - Statistical Testing
+# Course: 7COM1079 - Statistical Programming
+# Date: December 2025
+# Authors: Ali Iqbal, Ahmed Yar, Nouman Akbar, Ataullah, Muhammad Asim
+#
+# Research Question: Is there a significant difference in monthly income
+# between employees who left the company and those who stayed?
+###############################################################################
 
 # Load dataset
 data <- read.csv("WA_Fn-UseC_-HR-Employee-Attrition.csv")
 
-# Basic structure check
+###############################################################################
+# SECTION 1: DATA LOADING AND PREPARATION
+###############################################################################
+
+cat("\n=== HR ATTRITION ANALYSIS ===\n")
 cat("Dataset loaded successfully\n")
 cat("Number of rows:", nrow(data), "\n")
 cat("Number of columns:", ncol(data), "\n")
@@ -14,17 +24,34 @@ cat("Number of columns:", ncol(data), "\n")
 cat("\nAttrition counts:\n")
 print(table(data$Attrition))
 
-# Calculate basic income statistics
-cat("\nIncome statistics by attrition:\n")
+###############################################################################
+# SECTION 2: DESCRIPTIVE STATISTICS
+###############################################################################
+
+cat("\n=== DESCRIPTIVE STATISTICS ===\n")
+cat("Calculating income statistics by attrition status...\n\n")
+
+# Split data by attrition status
 stayed <- data[data$Attrition == "No", ]
 left <- data[data$Attrition == "Yes", ]
 
-cat("Employees who stayed - Mean income:", mean(stayed$MonthlyIncome), "\n")
-cat("Employees who left - Mean income:", mean(left$MonthlyIncome), "\n")
+# Display summary statistics
+cat("Employees who stayed (n =", nrow(stayed), "):\n")
+cat("  Mean income: $", round(mean(stayed$MonthlyIncome), 2), "\n")
+cat("  Median income: $", median(stayed$MonthlyIncome), "\n")
+cat("  SD: $", round(sd(stayed$MonthlyIncome), 2), "\n\n")
 
-# Check normality assumptions for t-test
+cat("Employees who left (n =", nrow(left), "):\n")
+cat("  Mean income: $", round(mean(left$MonthlyIncome), 2), "\n")
+cat("  Median income: $", median(left$MonthlyIncome), "\n")
+cat("  SD: $", round(sd(left$MonthlyIncome), 2), "\n")
+
+###############################################################################
+# SECTION 3: ASSUMPTION CHECKING - NORMALITY TEST
+###############################################################################
+
 cat("\n=== NORMALITY TESTING ===\n")
-cat("Testing if data follows normal distribution...\n\n")
+cat("Testing if data follows normal distribution (Shapiro-Wilk test)...\n\n")
 
 # Shapiro-Wilk test for stayed group
 stayed_income <- stayed$MonthlyIncome
@@ -49,9 +76,15 @@ if(shapiro_stayed$p.value < 0.05 || shapiro_left$p.value < 0.05) {
   cat("Can proceed with parametric t-test\n")
 }
 
-# Perform Mann-Whitney U Test (Wilcoxon rank-sum test)
+###############################################################################
+# SECTION 4: HYPOTHESIS TESTING - MANN-WHITNEY U TEST
+###############################################################################
+
 cat("\n=== MANN-WHITNEY U TEST ===\n")
-cat("Testing if income differs between groups...\n\n")
+cat("Non-parametric test for comparing two independent groups\n")
+cat("H₀: No difference in income between groups\n")
+cat("H₁: Difference exists between groups\n")
+cat("Significance level: α = 0.05\n\n")
 
 mw_test <- wilcox.test(stayed_income, left_income, alternative = "two.sided")
 
@@ -74,7 +107,10 @@ cat("\n=== EFFECT SIZE ===\n")
 cat("Mean difference: $", round(mean_diff, 2), "\n")
 cat("Median difference: $", round(median_diff, 2), "\n")
 
-# Create visualizations
+###############################################################################
+# SECTION 5: DATA VISUALIZATION
+###############################################################################
+
 cat("\n=== CREATING VISUALIZATIONS ===\n")
 
 # Histogram of income distribution
