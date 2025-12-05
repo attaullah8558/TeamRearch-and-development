@@ -1,141 +1,35 @@
 ###############################################################################
-# HR Employee Attrition Analysis - Statistical Testing
-# Course: 7COM1079 - Statistical Programming
-# Date: December 2025
-# Authors: Ali Iqbal, Ahmed Yar, Nouman Akbar, Ataullah, Muhammad Asim
-#
-# Research Question: Is there a significant difference in monthly income
-# between employees who left the company and those who stayed?
-###############################################################################
+# Analysis.R
+# Load dataset (base R only)
+data <- read.csv("WA_Fn-UseC_-HR-Employee-Attrition.csv", stringsAsFactors = FALSE)
 
-# Load dataset
-data <- read.csv("WA_Fn-UseC_-HR-Employee-Attrition.csv")
+# Convert Attrition to factor
+data$Attrition <- as.factor(data$Attrition)
 
-###############################################################################
-# SECTION 1: DATA LOADING AND PREPARATION
-###############################################################################
-
-cat("\n=== HR ATTRITION ANALYSIS ===\n")
-cat("Dataset loaded successfully\n")
-cat("Number of rows:", nrow(data), "\n")
-cat("Number of columns:", ncol(data), "\n")
-
-# Preview attrition distribution
-cat("\nAttrition counts:\n")
-print(table(data$Attrition))
+# Split income by attrition status
+income_stayed <- data$MonthlyIncome[data$Attrition == "No"]
+income_left   <- data$MonthlyIncome[data$Attrition == "Yes"]
 
 ###############################################################################
-# SECTION 2: DESCRIPTIVE STATISTICS
+# Descriptive Statistics
 ###############################################################################
-
-cat("\n=== DESCRIPTIVE STATISTICS ===\n")
-cat("Calculating income statistics by attrition status...\n\n")
-
-# Split data by attrition status
-stayed <- data[data$Attrition == "No", ]
-left <- data[data$Attrition == "Yes", ]
-
-# Display summary statistics
-cat("Employees who stayed (n =", nrow(stayed), "):\n")
-cat("  Mean income: $", round(mean(stayed$MonthlyIncome), 2), "\n")
-cat("  Median income: $", median(stayed$MonthlyIncome), "\n")
-cat("  SD: $", round(sd(stayed$MonthlyIncome), 2), "\n\n")
-
-cat("Employees who left (n =", nrow(left), "):\n")
-cat("  Mean income: $", round(mean(left$MonthlyIncome), 2), "\n")
-cat("  Median income: $", median(left$MonthlyIncome), "\n")
-cat("  SD: $", round(sd(left$MonthlyIncome), 2), "\n")
+cat("\nDESCRIPTIVE STATISTICS\n")
+cat("-------------------------------------------------------------------------------\n")
+cat("Stayed - Mean:", round(mean(income_stayed),2), " Median:", round(median(income_stayed),2), 
+    " SD:", round(sd(income_stayed),2), "\n")
+cat("Left   - Mean:", round(mean(income_left),2),   " Median:", round(median(income_left),2), 
+    " SD:", round(sd(income_left),2),   "\n")
 
 ###############################################################################
-# SECTION 3: ASSUMPTION CHECKING - NORMALITY TEST
+# Normality Checks (justify non-parametric test)
 ###############################################################################
-
-cat("\n=== NORMALITY TESTING ===\n")
-cat("Testing if data follows normal distribution (Shapiro-Wilk test)...\n\n")
-
-# Shapiro-Wilk test for stayed group
-stayed_income <- stayed$MonthlyIncome
-if(length(stayed_income) > 5000) {
-  # Sample if too large for Shapiro test
-  shapiro_stayed <- shapiro.test(sample(stayed_income, 5000))
-} else {
-  shapiro_stayed <- shapiro.test(stayed_income)
-}
-cat("Stayed group - Shapiro-Wilk p-value:", shapiro_stayed$p.value, "\n")
-
-# Shapiro-Wilk test for left group
-left_income <- left$MonthlyIncome
-shapiro_left <- shapiro.test(left_income)
-cat("Left group - Shapiro-Wilk p-value:", shapiro_left$p.value, "\n")
-
-if(shapiro_stayed$p.value < 0.05 || shapiro_left$p.value < 0.05) {
-  cat("\nResult: Data is NOT normally distributed (p < 0.05)\n")
-  cat("Recommendation: Use non-parametric test (Mann-Whitney U)\n")
-} else {
-  cat("\nResult: Data follows normal distribution\n")
-  cat("Can proceed with parametric t-test\n")
-}
-
-###############################################################################
-# SECTION 4: HYPOTHESIS TESTING - MANN-WHITNEY U TEST
-###############################################################################
-
-cat("\n=== MANN-WHITNEY U TEST ===\n")
-cat("Non-parametric test for comparing two independent groups\n")
-cat("H₀: No difference in income between groups\n")
-cat("H₁: Difference exists between groups\n")
-cat("Significance level: α = 0.05\n\n")
-
-mw_test <- wilcox.test(stayed_income, left_income, alternative = "two.sided")
-
-cat("Test Statistic (W):", mw_test$statistic, "\n")
-cat("P-value:", format(mw_test$p.value, scientific = TRUE), "\n")
-cat("\nDecision at α = 0.05:\n")
-if(mw_test$p.value < 0.05) {
-  cat("REJECT the null hypothesis\n")
-  cat("Conclusion: Significant difference in income between groups\n")
-} else {
-  cat("FAIL TO REJECT the null hypothesis\n")
-  cat("Conclusion: No significant difference in income\n")
-}
-
-# Calculate effect size and practical significance
-mean_diff <- mean(stayed_income) - mean(left_income)
-median_diff <- median(stayed_income) - median(left_income)
-
-cat("\n=== EFFECT SIZE ===\n")
-cat("Mean difference: $", round(mean_diff, 2), "\n")
-cat("Median difference: $", round(median_diff, 2), "\n")
-
-###############################################################################
-# SECTION 5: DATA VISUALIZATION
-###############################################################################
-
-cat("\n=== CREATING VISUALIZATIONS ===\n")
-
-# Histogram of income distribution
-png("income_histogram.png", width = 800, height = 600)
-hist(stayed_income, col = rgb(0, 0, 1, 0.5), 
-     main = "Income Distribution by Attrition Status",
-     xlab = "Monthly Income ($)", 
-     xlim = range(c(stayed_income, left_income)),
-     breaks = 30)
-hist(left_income, col = rgb(1, 0, 0, 0.5), add = TRUE, breaks = 30)
-legend("topright", c("Stayed", "Left"), 
-       fill = c(rgb(0, 0, 1, 0.5), rgb(1, 0, 0, 0.5)))
-dev.off()
-cat("Created: income_histogram.png\n")
-
-# Boxplot comparison
-png("income_boxplot.png", width = 800, height = 600)
-boxplot(MonthlyIncome ~ Attrition, data = data,
-        main = "Monthly Income by Attrition Status",
-        xlab = "Attrition", ylab = "Monthly Income ($)",
-        col = c("lightblue", "lightcoral"))
-dev.off()
-cat("Created: income_boxplot.png\n")
-
-cat("\n=== ANALYSIS COMPLETE ===\n")
+cat("\nNORMALITY CHECKS (Shapiro-Wilk)\n")
+cat("-------------------------------------------------------------------------------\n")
+shapiro_stayed <- if(length(income_stayed) > 5000) shapiro.test(sample(income_stayed, 5000)) else shapiro.test(income_stayed)
+shapiro_left   <- shapiro.test(income_left)
+cat("Stayed p-value:", format(shapiro_stayed$p.value, scientific = TRUE), "\n")
+cat("Left   p-value:", format(shapiro_left$p.value, scientific = TRUE), "\n")
+cat("Result: Non-normal distribution detected -> Using Mann-Whitney U test.\n")
 
 ###############################################################################
 # Mann-Whitney U Test (Wilcoxon rank-sum)
